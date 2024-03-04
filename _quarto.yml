@@ -1,14 +1,18 @@
 project:
   type: website
   output-dir: docs  
-          
+
 website:
   title: "PGCAPData"
+  favicon: Resources/favicon.png
   navbar:
+    logo: Resources/Logo.png
+    title: false
     left:
       - href: index.qmd
-        text: Home
-      - about.qmd
+        text: Sobre
+      - ofertas.qmd
+    search: true  
 
 format:
   html:

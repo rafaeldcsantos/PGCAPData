@@ -1,11 +1,8 @@
 ---
 title: "PGCAPData"
+lang: pt-br
 ---
 
-This is a Quarto website.
+Este site apresenta várias análises sobre o Programa de Pós-Graduação em Computação Aplicada, usando bases de dados acadêmicas internas, algumas extraídas do Qualis e Sucupira (dados abertos da CAPES).
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
-
-```{r}
-1 + 3408734234
-```
+Ainda está bastante incompleto. 

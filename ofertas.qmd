@@ -1,0 +1,194 @@
+---
+title: "Ofertas de Disciplinas"
+lang: pt-br
+---
+
+## Sobre
+
+Esta seção do notebook apresenta informações sobre oferta e matrícula em disciplinas da CAP.
+
+A base de dados foi extraída do controle acadêmico do INPE e contém todas as matrículas feitas em todas as disciplinas oferecidas entre 2003 e 2023 no INPE, incluindo gênero dos alunos e números de registros.
+
+A base de dados (`matriculados.csv`) pode ser baixada [aqui](Data/matriculados.csv).
+
+Primeiro importamos as bibliotecas que serão usadas neste notebook:
+
+```{python}
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import plotly.figure_factory as ff
+import plotly.graph_objects as go
+from itables import show
+from itertools import product
+```
+
+## Leitura e Filtro
+
+```{python}
+file = 'Data/matriculados.csv'
+df = pd.read_csv(file)
+```
+
+Esta base contém registros de matrículas em disciplinas que não foram oferecidas pela CAP. Para filtrá-las eliminamos os registros com disciplinas que não começam com o código `CAP`.
+
+```{python}
+df = df[df['Disciplina'].str.startswith('CAP')]
+```
+
+Vamos também criar um campo `Ano` a partir do campo `Periodo` para facilitar alguns filtros.
+
+```{python}
+df['Ano'] = pd.to_datetime(df['Periodo'], format='%Y%m').dt.year
+```
+
+Com isto podemos selecionar somente disciplinas oferecidas nos últimos dez anos.
+
+```{python}
+df = df[df['Ano'] >= 2014]
+```
+
+Usamos uma tabela interativa para mostrar parte dos dados importados.
+
+```{python}
+show(df)
+```
+
+## Análise Exploratória de Dados 
+
+### Quantos alunos de outros programas se matricularam?
+
+Vamos ver como é a procura anual pelas disciplinas, considerando os programas de origem dos alunos matriculados. 
+
+```{python}
+# Criamos uma tabela de cores específica.
+color_cats={"Programa": ['PGCAP','ISOLADA','PGETE','PGAST',\
+                         'PGSER','PGGES','PGMET','PGCST']}
+color_seq=["#0D7FBD","#A0A0A0","#845EC2","#D65DB1",\
+           "#FF6F91","#FF9671","#FFC75F","#F9F871"]
+# Criamos a figura.
+fig = px.histogram(df, x='Ano', color='Programa',
+                   title='Estudantes Matriculados por Programa e Ano',
+                   color_discrete_sequence=color_seq,
+                   category_orders=color_cats,
+                   )
+# Configurações adicionais.                   
+fig.update_yaxes(title_text='Número de Matriculados')
+fig.update_layout(xaxis = {'type' : 'category'})
+fig.update_layout(bargap=0.1)                   
+fig.show()
+```
+
+### Como é a procura por disciplinas?
+
+Para analisar a procura por disciplinas precisamos reorganizar os dados em uma matriz de forma que as linhas correspondam às disciplinas, as colunas aos anos e as células com o número de alunos matriculados naquela disciplina e naquele ano.
+
+
+```{python}
+dfMap = pd.pivot_table(df, values='Registro', index='Disciplina', \
+                       columns='Ano',aggfunc='size', fill_value=0)
+```
+
+Com esta matriz podemos fazer um *heatmap* que mostra a procura por ano e por disciplina.
+
+```{python}
+# Criamos o heatmap.
+fig = go.Figure(data=go.Heatmap(z=dfMap.values, x=dfMap.columns, y=dfMap.index,\
+                                hovertemplate='Ano: %{x}<br>Disciplina: %{y}<br>'+\
+                                'Total: %{z}<extra></extra>',\
+                                colorscale='Blackbody'))
+# Adicionamos texto para cada célula.
+annotations = [] 
+limColor = np.max(dfMap.values) / 2
+for i, y_val in enumerate(dfMap.index):
+    for j, x_val in enumerate(dfMap.columns):
+        num_students = dfMap.values[i, j]
+        annotations.append(
+            go.layout.Annotation(
+                x=x_val,
+                y=y_val,
+                text=f'{num_students}',
+                showarrow=False,
+                font=dict(color='white' if num_students<limColor \
+                                        else 'black',size=8)
+            )
+        )      
+fig.update_layout(annotations=annotations)
+# Ajustamos o tamanho do gráfico, legenda do eixo, título.
+fig.update_layout(
+    height=1600,  
+    width=  850,  
+    title='Número de Matriculados por Disciplina e Ano',
+    xaxis=dict(
+        tickmode='array',  
+        tickvals=list(dfMap.columns),  
+        ticktext=list(dfMap.columns.astype(str)),  
+        tickangle=45,  
+    ),
+) 
+# Ajustamos as fontes usadas para texto nos eixos.
+fig.update_xaxes(tickfont=dict(size=8))
+fig.update_yaxes(tickfont=dict(size=10))
+# Escondemos a legenda.
+fig.update_traces(showscale=False)
+# Mostramos o gráfico.
+fig.show()
+```
+
+Podemos criar um segundo *heatmap* para mostrar o percentual de matriculados por disciplina e por ano que são alunos regularmente matriculados no programa PGCAP.
+
+
+```{python}
+dfPGCAP = (pd.pivot_table(df[df['Programa'] == 'PGCAP'], values='Registro',\
+                          index='Disciplina',columns='Ano', aggfunc='size',\
+                          fill_value=0) / dfMap) * 100
+dfPGCAP = dfPGCAP.fillna(0)
+```
+
+
+Com esta matriz podemos fazer um *heatmap* que mostra para cada disciplina e cada ano a proporção de alunos da PGCAP.
+
+```{python}
+# Criamos o heatmap.
+fig = go.Figure(data=go.Heatmap(z=dfPGCAP.values, x=dfPGCAP.columns, y=dfPGCAP.index,\
+                                hovertemplate='Ano: %{x}<br>Disciplina: %{y}<br>'+\
+                                'Percentual da PGCAP: %{z:.2f}%<extra></extra>',\
+                                colorscale='Blackbody'))
+# Adicionamos texto para cada célula.
+annotations = [] 
+limColor = np.max(dfPGCAP.values) / 2
+for i, y_val in enumerate(dfPGCAP.index):
+    for j, x_val in enumerate(dfPGCAP.columns):
+        num_students = dfPGCAP.values[i, j]
+        formatted = '{:.2f}'.format(num_students)
+        annotations.append(
+            go.layout.Annotation(
+                x=x_val,
+                y=y_val,
+                text=formatted,
+                showarrow=False,
+                font=dict(color='white' if num_students<limColor \
+                                        else 'black',size=8)
+            )
+        ) 
+fig.update_layout(annotations=annotations)
+# Ajustamos o tamanho do gráfico, legenda do eixo, título.
+fig.update_layout(
+    height=1600,  
+    width=  850,  
+    title='Percentual dos Matriculados que são da PGCAP, por Disciplina e Ano',
+    xaxis=dict(
+        tickmode='array',  
+        tickvals=list(dfPGCAP.columns),  
+        ticktext=list(dfPGCAP.columns.astype(str)),  
+        tickangle=45,  
+    ),
+) 
+# Ajustamos as fontes usadas para texto nos eixos.
+fig.update_xaxes(tickfont=dict(size=8))
+fig.update_yaxes(tickfont=dict(size=10))
+# Escondemos a legenda.
+fig.update_traces(showscale=False)
+# Mostramos o gráfico.
+fig.show()
+```
