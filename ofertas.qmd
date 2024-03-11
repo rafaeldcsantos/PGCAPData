@@ -54,11 +54,11 @@ Usamos uma tabela interativa para mostrar parte dos dados importados.
 show(df)
 ```
 
-## Análise Exploratória de Dados 
+## Análise Exploratória de Dados
 
 ### Quantos alunos de outros programas se matricularam?
 
-Vamos ver como é a procura anual pelas disciplinas, considerando os programas de origem dos alunos matriculados. 
+Vamos ver como é a procura anual pelas disciplinas, considerando os programas de origem dos alunos matriculados.
 
 ```{python}
 # Criamos uma tabela de cores específica.
@@ -82,7 +82,6 @@ fig.show()
 ### Como é a procura por disciplinas?
 
 Para analisar a procura por disciplinas precisamos reorganizar os dados em uma matriz de forma que as linhas correspondam às disciplinas, as colunas aos anos e as células com o número de alunos matriculados naquela disciplina e naquele ano.
-
 
 ```{python}
 dfMap = pd.pivot_table(df, values='Registro', index='Disciplina', \
@@ -137,14 +136,12 @@ fig.show()
 
 Podemos criar um segundo *heatmap* para mostrar o percentual de matriculados por disciplina e por ano que são alunos regularmente matriculados no programa PGCAP.
 
-
 ```{python}
 dfPGCAP = (pd.pivot_table(df[df['Programa'] == 'PGCAP'], values='Registro',\
                           index='Disciplina',columns='Ano', aggfunc='size',\
                           fill_value=0) / dfMap) * 100
 dfPGCAP = dfPGCAP.fillna(0)
 ```
-
 
 Com esta matriz podemos fazer um *heatmap* que mostra para cada disciplina e cada ano a proporção de alunos da PGCAP.
 
