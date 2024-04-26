@@ -5,4 +5,5 @@ lang: pt-br
 
 Este site apresenta várias análises sobre o Programa de Pós-Graduação em Computação Aplicada, usando bases de dados acadêmicas internas, algumas extraídas do Qualis e Sucupira (dados abertos da CAPES).
 
-Ainda está bastante incompleto. 
+Ainda está bastante incompleto.
+python3 -m pip install jupyter

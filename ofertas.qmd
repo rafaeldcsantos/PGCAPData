@@ -19,7 +19,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
-from itables import show
 from itertools import product
 ```
 
@@ -36,10 +35,11 @@ Esta base contém registros de matrículas em disciplinas que não foram ofereci
 df = df[df['Disciplina'].str.startswith('CAP')]
 ```
 
-Vamos também criar um campo `Ano` a partir do campo `Periodo` para facilitar alguns filtros.
+Vamos também criar um campo `Ano` a partir do campo `Periodo` para facilitar alguns filtros, e uma versão do campo `Periodo` que pode ser processada como valores inteiros.
 
 ```{python}
 df['Ano'] = pd.to_datetime(df['Periodo'], format='%Y%m').dt.year
+df['PeriodoSemAno'] = df['Periodo'] % 10
 ```
 
 Com isto podemos selecionar somente disciplinas oferecidas nos últimos dez anos.
@@ -48,11 +48,6 @@ Com isto podemos selecionar somente disciplinas oferecidas nos últimos dez anos
 df = df[df['Ano'] >= 2014]
 ```
 
-Usamos uma tabela interativa para mostrar parte dos dados importados.
-
-```{python}
-show(df)
-```
 
 ## Análise Exploratória de Dados
 
@@ -76,6 +71,25 @@ fig = px.histogram(df, x='Ano', color='Programa',
 fig.update_yaxes(title_text='Número de Matriculados')
 fig.update_layout(xaxis = {'type' : 'category'})
 fig.update_layout(bargap=0.1)                   
+fig.show()
+```
+
+```{python}
+# Criamos uma tabela de cores específica.
+color_cats={"Programa": ['PGCAP','ISOLADA','PGETE','PGAST',\
+                         'PGSER','PGGES','PGMET','PGCST']}
+color_seq=["#0D7FBD","#A0A0A0","#845EC2","#D65DB1",\
+           "#FF6F91","#FF9671","#FFC75F","#F9F871"]
+periodo_order = sorted(df['Periodo'].unique())
+# Criamos a figura.
+fig = px.histogram(df, x='Periodo', color='Programa',
+                   title='Estudantes Matriculados por Programa e Período',
+                   color_discrete_sequence=color_seq,
+                   category_orders={'Periodo': periodo_order},
+                   )                   
+# Configurações adicionais.                   
+fig.update_yaxes(title_text='Número de Matriculados')
+fig.update_layout(xaxis = {'type' : 'category'})
 fig.show()
 ```
 
@@ -130,6 +144,9 @@ fig.update_xaxes(tickfont=dict(size=8))
 fig.update_yaxes(tickfont=dict(size=10))
 # Escondemos a legenda.
 fig.update_traces(showscale=False)
+
+
+
 # Mostramos o gráfico.
 fig.show()
 ```

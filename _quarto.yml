@@ -1,6 +1,6 @@
 project:
   type: website
-  output-dir: docs  
+  output-dir: docs
 
 website:
   title: "PGCAPData"
@@ -11,6 +11,7 @@ website:
     left:
       - href: index.qmd
         text: Sobre
+      - egressos.qmd
       - ofertas.qmd
     search: true  
 
@@ -20,5 +21,5 @@ format:
     css: styles.css
     toc: true
 
-editor: visual
+
 

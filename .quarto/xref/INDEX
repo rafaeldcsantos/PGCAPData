@@ -1,14 +1,11 @@
 {
   "index.qmd": {
-    "index.html": "1f806952"
+    "index.html": "72a81632"
   },
-  "about.qmd": {
-    "about.html": "ab39f5e0"
+  "egressos.qmd": {
+    "egressos.html": "d42a0df4"
   },
   "ofertas.qmd": {
-    "ofertas.html": "b8574c10"
-  },
-  "ofertas2.qmd": {
-    "ofertas2.html": "02232b02"
+    "ofertas.html": "ac63731d"
   }
 }

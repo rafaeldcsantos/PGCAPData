@@ -1,0 +1,10 @@
+---
+title: "Egressos"
+lang: pt-br
+---
+
+## Sobre
+
+Esta seção do notebook apresenta informações sobre os egressos da CAP. 
+
+A base de dados foi extraída do controle acadêmico do INPE e contém informações sobre todos os egressos na mesma. 
