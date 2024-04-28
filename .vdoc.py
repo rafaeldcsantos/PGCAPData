@@ -1,90 +1,92 @@
----
-title: "Egressos"
-lang: pt-br
----
-
-## Sobre
-
-Esta seção do notebook apresenta informações sobre os egressos da CAP. 
-
-A base de dados foi extraída do controle acadêmico do INPE e contém informações sobre todos os egressos na mesma. É possível que nem todos os egressos da CAP estejam na base, em especial os que entraram ou saíram do programa antes de 1980.
-
-A base de dados (`egressos.csv`) pode ser baixada [aqui](Data/egressos.csv). Seus campos são:
-
-* `Programa`: o código do programa que o egresso cursou;
-* `Nivel`: o nível cursado (`MESTRADO`, `DOUTORADO` ou `ISOLADO`);
-* `Registro`: o número de registro do egresso (ofuscado);
-* `Nome`: o nome do egresso (ofuscado);
-* `Adm`: a data de admissão do egresso (no formato YYYY-MM-DD);
-* `Sit`: a data de situação final do egresso (no formato YYYY-MM-DD);
-* `Creditos`: o número total de créditos obtidos pelo egresso;
-* `ConceitoGlobal`: O conceito global do egresso;
-* `Nascimento`: data de nascimento do egresso;
-* `Sexo`: sexo do egresso (a base de dados não tem informações sobre gênero);
-* `País`: país de nascimento do egresso.
-
-Alguns egressos podem aparecer mais de uma vez na base de dados mas em níveis diferentes (a mesma pessoa pode ter se matriculado, em anos diferentes, como `ISOLADO`, `MESTRADO` ou `DOUTORADO`).
-
-Primeiro importamos as bibliotecas que serão usadas neste notebook:
-
-```{python}
+# type: ignore
+# flake8: noqa
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-```
-
-## Leitura e Filtro
-
-Vamos ler o arquivo `egressos.csv` em um dataframe:
-
-
-```{python}
+#
+#
+#
+#
+#
+#
+#
+#
 file = 'Data/egressos.csv'
 df = pd.read_csv(file)
-```
-
-Esta base contém registros de todos os egressos de todos os programas do INPE. Vamos filtrar para conter somente os da CAP (alguns registros continham o nome do programa como `ECOTEC` ou `ECOSDA`, para os egressos mais antigos).
-
-```{python}
+#
+#
+#
+#
+#
 df = df[(df['Programa'] == 'PGCAP') | df['Programa'].str.startswith('ECO')]
-```
-
-Nem todos os registros estão completos, é preciso eliminar alguns para evitar problemas no processamento posterior.
-
-Vamos eliminar os registros para os quais não temos a data da situação final.
-
-```{python}
+#
+#
+#
+#
+#
+#
+#
 df = df[df['Sit'] != 'n/r']
-```
-
-Alguns campos foram lidos como strings mas devem ser representados como datas:
-
-```{python}
+#
+#
+#
+#
+#
 df['Adm'] = pd.to_datetime(df['Adm'], format='%Y-%m-%d')
 df['Sit'] = pd.to_datetime(df['Sit'], format='%Y-%m-%d')
 df['Nascimento'] = pd.to_datetime(df['Nascimento'], format='%Y-%m-%d')
-```
-
-
-Para facilitar o processamento posterior vamos criar campos auxiliares, para representar somente os anos de ingresso e graduação e para representar o número aproximado de meses entre a graduação e ingresso. 
-
-```{python}
+#
+#
+#
+#
+#
+#
 df['AnoAdm'] = df['Adm'].dt.year
 df['AnoGrad'] = df['Sit'].dt.year.astype(int)
 df['MesesParaGrad'] = (df['Sit'] - df['Adm']).dt.days/30
 df['IdadeNaGraduação'] = (df['Sit'] - df['Nascimento']).dt.days / 365.25 
-```
-
-## Análise Exploratória de Dados
-
-### Quantos alunos se formaram ao longo dos anos?
-
-Vamos começar com uma visualização simples: quantos alunos (de cada nível) se formaram ao longo dos anos? 
-
-```{python}
+#
+#
+#
+#
+#
+#
+#
+#
+#
 # Primeiro contamos o número de graduados por ano e nível.
 df_agg = df.groupby(['AnoGrad', 'Nivel']).size().reset_index(name='Número')
 # Criamos o gráfico de barras acumuladas.
@@ -96,17 +98,17 @@ fig = px.bar(df_agg, x='AnoGrad', y='Número', color='Nivel',
 fig.update_layout(bargap=0.1)         
 fig.update_xaxes(tickangle=90, dtick=1, tickfont=dict(size=8))               
 fig.show()
-```
-
-::: {.callout-note}
-Evitei usar um histograma do plotly porque o agregamento é feito automaticamente e cada barra corresponderá a um período, por exemplo, 2024-2025.
-:::
-
-### Como é a distribuição do tempo de graduação?
-
-Vamos ver a distribuição do tempo de graduação para mestres e doutores usando um *violin plot*. Primeiro para mestres:
-
-```{python}
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
 # Separamos somente os egressos de mestrado.
 dfMSc = df[df['Nivel'] == 'MESTRADO']
 # Criamos o gráfico.
@@ -127,9 +129,9 @@ fig_master.add_annotation(x=0.5, y=36, text='36 meses',showarrow=False,
                           font=dict(color='red', size=12))
 fig_master.show()
 ```
-Fazemos o mesmo para o doutorado.
-
-```{python}
+#
+#
+#
 # Separamos somente os egressos de doutorado.
 dfPhD = df[df['Nivel'] == 'DOUTORADO']
 # Criamos o gráfico.
@@ -149,21 +151,21 @@ fig_phd.add_annotation(x=0.5, y=60, text='60 meses',showarrow=False,
                        bgcolor='rgba(255, 255, 255, 1)',
                        font=dict(color='red', size=12))
 fig_phd.show()
-```
-
-Estes gráficos deram a visão geral do tempo para conclusão do mestrado ou doutorado, mas existe alguma variação deste tempo *ao longo de uma escala maior de tempo*? Vamos verificar como o tempo de conclusão varia ao longo das décadas.
-
-Primeiro criamos delimitadores para as décadas, e uma [paleta de cores](https://www.rampgenerator.com/?unique_colors=2&steps=6&min_color=%231268af&max_color=%23f3801b&min_value=0&max_value=100&decimals=2&opacity=1&col=COLUMN_NAME&null_color=%23EEEEEE&legend_labels=&legendContainer_css=width%3A+86px%3B%0D%0Abackground%3A+%23fff%3B%0D%0Aborder%3A+1px+solid+%23000%3B%0D%0Apadding%3A+10px+10px%3B%0D%0Aline-height%3A0%3B%0D%0Aborder-radius%3A10px%3B%0D%0Amargin-top%3A10px%3B&legendColor_css=display%3A+inline-block%3B%0D%0Awidth%3A20px%3B%0D%0Aheight%3A14px%3B&legendLabel_css=display%3A+inline-block%3B%0D%0Afont-size%3A9px%3B%0D%0Amargin-bottom%3A0%3B&units=%25&default_tab=TABLE&updated=1) bem subjetiva:
-
-```{python}
+#
+#
+#
+#
+#
+#
+#
 décadas = [(1970, 1980), (1980, 1990), (1990, 2000), (2000, 2010),
            (2010, 2020), (2020, 2030)]
 cores = ['#1268AF', '#3F6C91', '#6C7173', '#997656', '#C67B38','#F3801B']
-```
-
-Vejamos a variação para os egressos de mestrado:
-
-```{python}
+#
+#
+#
+#
+#
 # Criamos a figura.
 fig = go.Figure()
 # Adicionamos um traço para cada década.
@@ -192,11 +194,11 @@ fig.add_annotation(x=(traços-1)/2, y=36, text='36 meses',showarrow=False,
                    bgcolor='rgba(255, 255, 255, 1)',
                    font=dict(color='red', size=12))                  
 fig.show()
-```
-
-O mesmo para doutorado:
-
-```{python}
+#
+#
+#
+#
+#
 # Criamos a figura.
 fig = go.Figure()
 # Adicionamos um traço para cada década.
@@ -225,13 +227,13 @@ fig.add_annotation(x=(traços-1)/2, y=60, text='60 meses',showarrow=False,
                    bgcolor='rgba(255, 255, 255, 1)',
                    font=dict(color='red', size=12))
 fig.show()
-```
-
-### Como é a distribuição entre sexos?
-
-Podemos também visualizar a distribuição dos egressos por ano considerando o sexo, usando um gráfico de barras:
-
-```{python}
+#
+#
+#
+#
+#
+#
+#
 # Agrupamos os mestres por ano e sexo.
 df_grouped = dfMSc.groupby([df['AnoGrad'], 'Sexo']).size().reset_index(name='Número')
 # Criamos o gráfico.
@@ -239,11 +241,11 @@ fig = px.bar(df_grouped, x='AnoGrad', y='Número', color='Sexo',
              title='Graduados por Sexo e Ano -- Mestrado',
              labels={'Número': 'Número de Egressos', 'AnoGrad': 'Ano'})
 fig.show()
-```
-
-Fazemos o mesmo para doutorado:
-
-```{python}
+#
+#
+#
+#
+#
 # Agrupamos os doutores por ano e sexo.
 df_grouped = dfPhD.groupby([df['AnoGrad'], 'Sexo']).size().reset_index(name='Número')
 # Criamos o gráfico.
@@ -251,34 +253,34 @@ fig = px.bar(df_grouped, x='AnoGrad', y='Número', color='Sexo',
              title='Graduados por Sexo e Ano -- Doutorado',
              labels={'Número': 'Número de Egressos', 'AnoGrad': 'Ano'})
 fig.show()
-```
-
-### Com que idade os graduandos se formaram?
-
-Podemos visualizar a distribuição da idade em anos dos egressos quando se formaram:
-
-```{python}
+#
+#
+#
+#
+#
+#
+#
 fig_msc = px.histogram(dfMSc, x='IdadeNaGraduação', 
                        nbins=30, range_x=[0, 60],
                        title='Distribuição da Idade na Graduação (Mestrado)',
                        labels={'IdadeNaGraduação': 'Idade na Graduação'},
                        marginal='box')  
 fig_msc.show()
-```
-
-
-```{python}
+#
+#
+#
+#
 fig_phd = px.histogram(dfPhD, x='IdadeNaGraduação', 
                        nbins=30, range_x=[0, 60],
                        title='Distribuição da Idade na Graduação (Doutorado)',
                        labels={'IdadeNaGraduação': 'Idade na Graduação'},
                        marginal='box') 
 fig_phd.show()
-```
-
-Existem diferenças nas distribuições das idades em que se formam para homens e mulheres? Vamos ver para os egressos do mestrado: 
-
-```{python}
+#
+#
+#
+#
+#
 # Separamos o dataframe:
 dfMScM = dfMSc[dfMSc['Sexo'] == 'Masculino']
 dfMScF = dfMSc[dfMSc['Sexo'] == 'Feminino']
@@ -302,11 +304,11 @@ fig.update_layout(title='Idade na Graduação (MSc)',
                   violinmode='overlay',
                   )
 fig.show()
-```
-
-E agora para o doutorado:
-
-```{python}
+#
+#
+#
+#
+#
 # Separamos o dataframe:
 dfPhDM = dfPhD[dfPhD['Sexo'] == 'Masculino']
 dfPhDF = dfPhD[dfPhD['Sexo'] == 'Feminino']
@@ -330,15 +332,15 @@ fig.update_layout(title='Idade na Graduação (PhD)',
                   violinmode='overlay',
                   )
 fig.show()
-```
-
-## Outras análises
-
-Apesar dos dados disponíveis serem relativamente limitados, é possível fazer outras análises com algum esforço adicional.
-
-Por exemplo, podemos extrair da base de dados os egressos que cursaram os dois níveis do programa. Segue o código:
-
-```{python}
+#
+#
+#
+#
+#
+#
+#
+#
+#
 # Agrupa por nome e nível. 
 agrNomNiv = df.groupby('Nome')['Nivel'].nunique()
 # Criamos um índice com os nomes dos alunos que completaram dois níveis.
@@ -360,11 +362,11 @@ dfAmbos = dfAmbos.rename(columns={'Programa_MSc': 'Programa',
                                   'Nascimento_MSc': 'Nascimento',
                                   'Sexo_MSc': 'Sexo'})
 dfAmbos.to_csv("Data/DoisNiveis.csv")
-```
-
-Com esta informação podemos fazer análises comparativas entre os estudantes que cursaram o mestrado e o doutorado e outros. Só por curiosidade vamos ver como são as linhas do tempo deste subconjunto de egressos:
-
-```{python}
+#
+#
+#
+#
+#
 dfAmbosS = dfAmbos.sort_values(by='Adm_MSc')
 # Criamos a figura
 fig = go.Figure()
@@ -398,6 +400,8 @@ fig.update_layout(title='Linha do Tempo para Egressos que Cursaram os Dois Níve
                  )
 # Mostramos a figura.
 fig.show()
-```
-
-Embora ilustrativo este gráfico não é tão útil, mas pode dar ideias para outras análises.
+#
+#
+#
+#
+#
