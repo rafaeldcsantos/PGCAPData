@@ -17,8 +17,9 @@ website:
 
 format:
   html:
-    theme: flatly
-    css: styles.css
+    theme: 
+    - lumen
+    - "Resources/SCSS/styles.scss"
     toc: true
 
 

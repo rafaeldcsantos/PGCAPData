@@ -9,7 +9,14 @@ Esta seção do notebook apresenta informações sobre oferta e matrícula em di
 
 A base de dados foi extraída do controle acadêmico do INPE e contém todas as matrículas feitas em todas as disciplinas oferecidas entre 2003 e 2023 no INPE, incluindo gênero dos alunos e números de registros.
 
-A base de dados (`matriculados.csv`) pode ser baixada [aqui](Data/matriculados.csv).
+A base de dados (`matriculados.csv`) pode ser baixada [aqui](Data/matriculados.csv). Seus campos são:
+
+* `Disciplina`: o nome completo (com código) da disciplina em que o aluno se matriculou;
+* `Periodo`: o período (YYYYPP) em que o aluno se matriculou;
+* `Registro`: o número de registro do egresso (ofuscado);
+* `Sexo`: o sexo do aluno;
+* `Programa`: o código do programa no qual o aluno regular está matriculado; ou `ISOLADA`.
+
 
 Primeiro importamos as bibliotecas que serão usadas neste notebook:
 
